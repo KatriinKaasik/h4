@@ -473,7 +473,7 @@ public class QuaternionTest {
       q2 = new Quaternion (0., 2., 3., 4.);
       h2 = q2.hashCode();
       q3 = new Quaternion (1., 0., 3., 4.);                                                            
-      h3 = q2.hashCode();
+      h3 = q3.hashCode();
       Quaternion q4 = new Quaternion (1., 2., 0., 4.);
       int h4 = q4.hashCode();
       Quaternion q5 = new Quaternion (1., 2., 3., 0.);                                                 
