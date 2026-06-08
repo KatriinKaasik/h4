@@ -1,61 +1,121 @@
-# README #
+# Homework 4
 
-This repository is read-only, make a private fork in the bitbucket server
-for your own files. Clone this forked repository to your local computer and solve
-the task.
+This project is configured to work offline using local libraries in the `lib/` directory. All code resides in the default package.
 
-See on neljanda kodutöö failide hoidla, mida saab kasutada ainult algseks lugemiseks.
-Töötamiseks looge endale isiklik repositoorium, näiteks privaatne 'fork' bitbucket serverisse, millest saate luua klooni oma arvutisse.
-
-## Command line examples. Näidete kasutamine käsurealt ##
-#### Compilation. Kompileerimine: ####
+## 📂 Project Structure
 
 ```
-#!bash
-
-javac -cp src src/Quaternion.java
+h4/
+├── src/main/java/       # Application source code
+│   └── Quaternion.java
+├── src/test/java/       # Test code
+│   ├── QuaternionTest.java
+│   └── Aout.java        # Test helper utilities
+├── lib/                 # Local libraries
+│   ├── junit-4.13.2.jar
+│   └── hamcrest-core-1.3.jar
+├── bin/                 # Compiled class files
+└──
 ```
 
-#### Execution. Käivitamine: ####
+## 🛠️ Command Line Instructions
 
-```
-#!bash
+Since the project uses the default package and local JAR files, commands differ by operating system (path separator: Windows `;` vs Linux/Mac `:`).
 
-java -cp src Quaternion
-```
+### Windows (Command Prompt / PowerShell)
 
+```bash
+# 1. Compile main code
+javac -d bin src/main/java/*.java
 
-### Usage of tests. Testide kasutamine ###
-#### Compilation of a test. Testi kompileerimine: ####
+# 2. Compile tests (requires lib folder and main code in bin)
+javac -d bin -cp "lib/*;bin" src/test/java/*.java
 
-```
-#!bash
+# 3. Run application
+java -cp bin Quaternion
 
-javac -encoding utf8 -cp 'src:test:test/junit-4.13.2.jar:test/hamcrest-core-1.3.jar' test/QuaternionTest.java
-
-```
-In Windows replace colons by semicolons. Sama Windows aknas (koolonite asemel peavad olema semikoolonid):
-
-```
-#!bash
-
-javac -encoding utf8 -cp 'src;test;test/junit-4.13.2.jar;test/hamcrest-core-1.3.jar' test/QuaternionTest.java
-
-
+# 4. Run JUnit tests
+java -cp "bin;lib/*" org.junit.runner.JUnitCore QuaternionTest
 ```
 
-#### Running a test. Testi käivitamine: ####
+### Linux and macOS
 
+```bash
+# 1. Compile main code
+javac -d bin src/main/java/*.java
+
+# 2. Compile tests (requires lib folder and main code in bin)
+javac -d bin -cp "lib/*:bin" src/test/java/*.java
+
+# 3. Run application
+java -cp bin Quaternion
+
+# 4. Run JUnit tests
+java -cp "bin:lib/*" org.junit.runner.JUnitCore QuaternionTest
 ```
-#!bash
 
-java -cp 'src:test:test/junit-4.13.2.jar:test/hamcrest-core-1.3.jar' org.junit.runner.JUnitCore QuaternionTest
-```
+---
 
-The same for Windows. Sama Windows aknas (koolonite asemel semikoolonid):
+## 📋 Task Description
 
-```
-#!bash
+Implement an abstract data type "Quaternion" according to
+ https://enos.itcollege.ee/%7Ejapoia/algoritmid/quat/
+Make sure that:
+1. If any sources are used in the solution, they are cited.
+2. Instance variables are described by the keyword private;
+ variable and method names begin with a lowercase letter.
+3. All exceptions have an appropriate and informative error message
+ that provides the full context.
+4. Equals sign == is not used to compare real numbers (e.g. in
+ methods isZero or equals). Instead, it is checked that the absolute value
+ of the difference between the real numbers is less than a predetermined
+ positive threshold (e.g. 0.000001). Define a threshold as a static final
+ constant in exactly one place (for example, at the beginning of the class).
+5. The methods inverse, divideByRight and divideByLeft check by themselves
+ that there is no division by zero and throw an exception if necessary.
+6. The hashCode method depends on all instance variables. The hash code of
+ equal quaternions is the same, different quaternions, in general, produce
+ a different hash code. Collisions must not be easy to predict
+ (symmetry, for example, is a bad idea).
+7. The methods toString and valueOf are in exact correspondence - valueOf
+ can correctly interpret all the strings that toString outputs.
+8. The valueOf method must be able to read negative coefficients of
+ imaginary parts without a plus sign, for example in the form "-1-2i-3j-4k".
+ The toString method must be implemented accordingly (the combination "+-"
+ in strings is not allowed). Note that "-2.0e-3-4.0e-1i-5.0e-2j-6.0e-3k"
+ is a legal input for valueOf (real numbers may have exponent parts).
+Suggestion: start from the methods equals and toString, otherwise the tests
+ would not work.
 
-java -cp 'src;test;test/junit-4.13.2.jar;test/hamcrest-core-1.3.jar' org.junit.runner.JUnitCore QuaternionTest
-```
+
+Realiseerida abstraktne andmetüüp "Kvaternioon", millel oleksid tabelis
+ https://enos.itcollege.ee/%7Ejapoia/algoritmid/quat/ loetletud operatsioonid.
+Kontrollige, et:
+1. Kui lahenduses on kasutatud mingeid allikaid, siis need on viidatud.
+2. Isendimuutujad on kirjeldatud võtmesõnaga private, muutujate ja meetodite
+ nimed algavad väikese algustähega.
+3. Kõikidel erinditel peab olema asjakohane ja informatiivne veateade.
+4. Reaalarvude võrdlemiseks (meetodid isZero ja/või equals) ei kasutata
+ võrdusmärke. Selle asemel kontrollitakse, et arvude vahe on absoluutväärtuselt
+ väiksem etteantud positiivsest lävendist (näit. 0.000001). Lävend defineerida
+ static final konstandina täpselt ühes kohas (klassi alguses näiteks).
+5. Meetodid inverse, divideByRight ja divideByLeft kontrollivad ilmutatud kujul,
+ et ei teki nulliga jagamist ning viskavad vajadusel erindi.
+6. Meetod hashCode sõltub kõigist isendimuutujatest. Võrdsete kvaternioonide
+ hashCode on sama, erinevatel kvaternioonidel võimaluse korral erinev.
+ Kollisioonid ei tohi olla lihtsalt ennustatavad (sümmeetria näiteks on halb idee).
+7. Meetodid toString ja valueOf on omavahel täpselt kooskõlas - valueOf oskab
+ õigesti tõlgendada kõiki sõnesid, mida toString väljastab.
+ Meetod valueOf peab tegema täieliku veatöötluse.
+8. Meetod valueOf peab oskama lugeda negatiivseid imaginaarosade kordajaid
+ ilma plussmärgita, näiteks kujul "-1-2i-3j-4k". Vastavalt peab käituma ka
+ meetod toString (kombinatsioon "+-" kvaterniooni trükikujus ei ole lubatud).
+ Tublimad võivad proovida eksponentkujul arvudega hakkama saada, näiteks
+ "-2.0e-3-4.0e-1i-5.0e-2j-6.0e-3k" on igati legaalne kvaternioon.
+Soovitus: alustage meetoditest equals ja toString, muidu automaattestid ei tööta.
+
+---
+
+## ⚙️ Requirements
+
+- **Java 8** or higher
