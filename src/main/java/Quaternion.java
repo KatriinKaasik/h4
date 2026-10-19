@@ -1,3 +1,7 @@
+/**
+ * Lahenduse loomisel kasutasin tehisintellekti abi (Claude Sonnet 5.5).
+ */
+
 import java.util.*;
 
 /** Quaternions. Basic operations. */
@@ -30,21 +34,21 @@ public class Quaternion {
       return a;
    }
 
-   /** Imaginary part i of the quaternion. 
+   /** Imaginary part i of the quaternion.
     * @return imaginary part i
     */
    public double getIpart() {
       return b;
    }
 
-   /** Imaginary part j of the quaternion. 
+   /** Imaginary part j of the quaternion.
     * @return imaginary part j
     */
    public double getJpart() {
       return c;
    }
 
-   /** Imaginary part k of the quaternion. 
+   /** Imaginary part k of the quaternion.
     * @return imaginary part k
     */
    public double getKpart() {
@@ -52,7 +56,7 @@ public class Quaternion {
    }
 
    /** Conversion of the quaternion to the string.
-    * @return a string form of this quaternion: 
+    * @return a string form of this quaternion:
     * "a+bi+cj+dk"
     * (without any brackets)
     */
@@ -65,9 +69,9 @@ public class Quaternion {
       return (x < 0 || 1 / x < 0) ? "" + x : "+" + x;
    }
 
-   /** Conversion from the string to the quaternion. 
+   /** Conversion from the string to the quaternion.
     * Reverse to <code>toString</code> method.
-    * @throws IllegalArgumentException if string s does not represent 
+    * @throws IllegalArgumentException if string s does not represent
     *     a quaternion (defined by the <code>toString</code> method)
     * @param s string of form produced by the <code>toString</code> method
     * @return a quaternion represented by string s
@@ -111,7 +115,7 @@ public class Quaternion {
       return new Quaternion (a, b, c, d);
    }
 
-   /** Test whether the quaternion is zero. 
+   /** Test whether the quaternion is zero.
     * @return true, if the real part and all the imaginary parts are (close to) zero
     */
    public boolean isZero() {
@@ -119,7 +123,7 @@ public class Quaternion {
               && Math.abs (c) < EPSILON && Math.abs (d) < EPSILON;
    }
 
-   /** Conjugate of the quaternion. Expressed by the formula 
+   /** Conjugate of the quaternion. Expressed by the formula
     *     conjugate(a+bi+cj+dk) = a-bi-cj-dk
     * @return conjugate of <code>this</code>
     */
@@ -127,7 +131,7 @@ public class Quaternion {
       return new Quaternion (a, -b, -c, -d);
    }
 
-   /** Opposite of the quaternion. Expressed by the formula 
+   /** Opposite of the quaternion. Expressed by the formula
     *    opposite(a+bi+cj+dk) = -a-bi-cj-dk
     * @return quaternion <code>-this</code>
     */
@@ -135,7 +139,7 @@ public class Quaternion {
       return new Quaternion (-a, -b, -c, -d);
    }
 
-   /** Sum of quaternions. Expressed by the formula 
+   /** Sum of quaternions. Expressed by the formula
     *    (a1+b1i+c1j+d1k) + (a2+b2i+c2j+d2k) = (a1+a2) + (b1+b2)i + (c1+c2)j + (d1+d2)k
     * @param q addend
     * @return quaternion <code>this+q</code>
@@ -167,7 +171,7 @@ public class Quaternion {
    }
 
    /** Inverse of the quaternion. Expressed by the formula
-    *     1/(a+bi+cj+dk) = a/(a*a+b*b+c*c+d*d) + 
+    *     1/(a+bi+cj+dk) = a/(a*a+b*b+c*c+d*d) +
     *     ((-b)/(a*a+b*b+c*c+d*d))i + ((-c)/(a*a+b*b+c*c+d*d))j + ((-d)/(a*a+b*b+c*c+d*d))k
     * @return quaternion <code>1/this</code>
     */
@@ -205,7 +209,7 @@ public class Quaternion {
          throw new RuntimeException ("Division by zero: " + q + " \\ " + this);
       return q.inverse().times (this);
    }
-   
+
    /** Equality test of quaternions. Difference of equal numbers
     *     is (close to) zero.
     * @param qo second quaternion
@@ -233,7 +237,7 @@ public class Quaternion {
               Math.round (c / EPSILON), Math.round (d / EPSILON));
    }
 
-   /** Norm of the quaternion. Expressed by the formula 
+   /** Norm of the quaternion. Expressed by the formula
     *     norm(a+bi+cj+dk) = Math.sqrt(a*a+b*b+c*c+d*d)
     * @return norm of <code>this</code> (norm is a real number)
     */
@@ -241,7 +245,7 @@ public class Quaternion {
       return Math.sqrt (a * a + b * b + c * c + d * d);
    }
 
-   /** Main method for testing purposes. 
+   /** Main method for testing purposes.
     * @param args command line parameters
     */
    public static void main (String[] args) {
@@ -271,4 +275,3 @@ public class Quaternion {
    }
 
 }
-
