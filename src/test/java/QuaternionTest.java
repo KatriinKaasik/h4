@@ -605,5 +605,74 @@ public class QuaternionTest {
          h1 == h2);
    }
 
+   @Test (timeout=1000)
+   public void testPowZero() {
+      assertEquals ("q^0 must be 1", new Quaternion (1., 0., 0., 0.),
+              new Quaternion (1., 2., 3., 4.).pow (0));
+      assertEquals ("q^0 must be 1", new Quaternion (1., 0., 0., 0.),
+              new Quaternion (-5., 0., 7., -13.).pow (0));
+      assertEquals ("0^0 must be 1", new Quaternion (1., 0., 0., 0.),
+              new Quaternion (0., 0., 0., 0.).pow (0));
+   }
+
+   @Test (timeout=1000)
+   public void testPowOne() {
+      Quaternion q = new Quaternion (1., 2., 3., 4.);
+      Quaternion p = q.pow (1);
+      assertEquals ("q^1 must be equal to q", new Quaternion (1., 2., 3., 4.), p);
+      assertNotSame ("q^1 must be a new object, not q itself", q, p);
+      assertEquals ("pow must not change the argument", new Quaternion (1., 2., 3., 4.), q);
+   }
+
+   @Test (timeout=1000)
+   public void testPowMinusOne() {
+      Quaternion q = new Quaternion (1., 2., 3., 4.);
+      assertEquals ("wrong (1+2i+3j+4k)^-1",
+              new Quaternion (0.0333333333, -0.0666666667, -0.1, -0.1333333333), q.pow (-1));
+      assertEquals ("pow must not change the argument", new Quaternion (1., 2., 3., 4.), q);
+      assertEquals ("wrong (0+0i+2j+0k)^-1",
+              new Quaternion (0., 0., -0.5, 0.), new Quaternion (0., 0., 2., 0.).pow (-1));
+   }
+
+   @Test (timeout=1000)
+   public void testPowPositive() {
+      Quaternion q = new Quaternion (1., 2., 3., 4.);
+      assertEquals ("wrong (1+2i+3j+4k)^2", new Quaternion (-28., 4., 6., 8.), q.pow (2));
+      assertEquals ("wrong (1+2i+3j+4k)^3", new Quaternion (-86., -52., -78., -104.), q.pow (3));
+      assertEquals ("wrong (1+2i+3j+4k)^4", new Quaternion (668., -224., -336., -448.), q.pow (4));
+      assertEquals ("pow must not change the argument", new Quaternion (1., 2., 3., 4.), q);
+      assertEquals ("wrong i^2", new Quaternion (-1., 0., 0., 0.),
+              new Quaternion (0., 1., 0., 0.).pow (2));
+      assertEquals ("wrong i^3", new Quaternion (0., -1., 0., 0.),
+              new Quaternion (0., 1., 0., 0.).pow (3));
+   }
+
+   @Test (timeout=1000)
+   public void testPowNegative() {
+      Quaternion q = new Quaternion (1., 2., 3., 4.);
+      assertEquals ("wrong (1+2i+3j+4k)^-2",
+              new Quaternion (-0.0311111111, -0.0044444444, -0.0066666667, -0.0088888889), q.pow (-2));
+      assertEquals ("wrong (1+2i+3j+4k)^-3",
+              new Quaternion (-0.0031851852, 0.0019259259, 0.0028888889, 0.0038518519), q.pow (-3));
+      assertEquals ("pow must not change the argument", new Quaternion (1., 2., 3., 4.), q);
+   }
+
+   @Test (timeout=1000)
+   public void testPowZeroQuaternionPositive() {
+      assertEquals ("0^1 must be 0", new Quaternion (0., 0., 0., 0.),
+              new Quaternion (0., 0., 0., 0.).pow (1));
+      assertEquals ("0^3 must be 0", new Quaternion (0., 0., 0., 0.),
+              new Quaternion (0., 0., 0., 0.).pow (3));
+   }
+
+   @Test (expected=RuntimeException.class)
+   public void testPowZeroMinusOne() {
+      new Quaternion (0., 0., 0., 0.).pow (-1);
+   }
+
+   @Test (expected=RuntimeException.class)
+   public void testPowZeroNegative() {
+      new Quaternion (0., 0., 0., 0.).pow (-3);
+   }
 }
 

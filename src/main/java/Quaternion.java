@@ -1,18 +1,13 @@
-/**
- * Lahenduse loomisel kasutasin tehisintellekti abi (Claude Sonnet 5.5).
- */
-
 import java.util.*;
 
 /** Quaternions. Basic operations. */
 public class Quaternion {
 
-   private static final double EPSILON = 0.000001;
-
-   private final double a;
-   private final double b;
-   private final double c;
-   private final double d;
+   private static final double DELTA = 0.000001;
+   private double rpart;
+   private double ipart;
+   private double jpart;
+   private double kpart;
 
    /** Constructor from four double values.
     * @param a real part
@@ -21,38 +16,38 @@ public class Quaternion {
     * @param d imaginary part k
     */
    public Quaternion (double a, double b, double c, double d) {
-      this.a = a;
-      this.b = b;
-      this.c = c;
-      this.d = d;
+      rpart = a;
+      ipart = b;
+      jpart = c;
+      kpart = d;
    }
 
    /** Real part of the quaternion.
     * @return real part
     */
    public double getRpart() {
-      return a;
+      return rpart;
    }
 
    /** Imaginary part i of the quaternion.
     * @return imaginary part i
     */
    public double getIpart() {
-      return b;
+      return ipart;
    }
 
    /** Imaginary part j of the quaternion.
     * @return imaginary part j
     */
    public double getJpart() {
-      return c;
+      return jpart;
    }
 
    /** Imaginary part k of the quaternion.
     * @return imaginary part k
     */
    public double getKpart() {
-      return d;
+      return kpart;
    }
 
    /** Conversion of the quaternion to the string.
@@ -62,11 +57,10 @@ public class Quaternion {
     */
    @Override
    public String toString() {
-      return a + sign (b) + "i" + sign (c) + "j" + sign (d) + "k";
-   }
-
-   private static String sign (double x) {
-      return (x < 0 || 1 / x < 0) ? "" + x : "+" + x;
+      return Double.toString(rpart)
+              + (ipart < 0 ? Double.toString(ipart) : "+" + Double.toString(ipart)) + "i"
+              + (jpart < 0 ? Double.toString(jpart) : "+" + Double.toString(jpart)) + "j"
+              + (kpart < 0 ? Double.toString(kpart) : "+" + Double.toString(kpart)) + "k";
    }
 
    /** Conversion from the string to the quaternion.
@@ -77,34 +71,45 @@ public class Quaternion {
     * @return a quaternion represented by string s
     */
    public static Quaternion valueOf (String s) {
-      if (s == null)
-         throw new IllegalArgumentException ("Cannot convert null to a quaternion");
-      try {
-         for (char ch : s.toCharArray())
-            if ("0123456789.+-eEijk".indexOf (ch) < 0)
-               throw new NumberFormatException();
-         int i = s.indexOf ('i');
-         int j = s.indexOf ('j');
-         int k = s.indexOf ('k');
-         if (i < 0 || j < i || k < j || k != s.length() - 1)
-            throw new NumberFormatException();
-         int split = i - 1;
-         while (split > 0 && ("+-".indexOf (s.charAt (split)) < 0 || "eE".indexOf (s.charAt (split - 1)) >= 0))
-            split--;
-         if (split <= 0)
-            throw new NumberFormatException();
-         return new Quaternion (number (s.substring (0, split), false), number (s.substring (split, i), true),
-                 number (s.substring (i + 1, j), true), number (s.substring (j + 1, k), true));
-      } catch (NumberFormatException e) {
-         throw new IllegalArgumentException ("Not a quaternion (expected a+bi+cj+dk): \"" + s + "\"");
+      if (s == null) {
+         throw new IllegalArgumentException(
+                 "Cannot parse quaternion: input string is null"
+         );
       }
-   }
 
-   /** Parse one part of the quaternion string. */
-   private static double number (String part, boolean signRequired) {
-      if (part.isEmpty() || (signRequired && "+-".indexOf (part.charAt (0)) < 0))
-         throw new NumberFormatException();
-      return Double.parseDouble (part);
+      String number =
+              "[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?";
+      String signedNumber =
+              "[+-](?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?";
+
+      String regex =
+              "^(" + number + ")"
+                      + "(" + signedNumber + ")i"
+                      + "(" + signedNumber + ")j"
+                      + "(" + signedNumber + ")k$";
+
+      java.util.regex.Matcher matcher =
+              java.util.regex.Pattern.compile(regex).matcher(s);
+
+      if (!matcher.matches()) {
+         throw new IllegalArgumentException(
+                 "Cannot parse quaternion: invalid value '" + s + "'"
+         );
+      }
+
+      try {
+         double a = Double.parseDouble(matcher.group(1));
+         double b = Double.parseDouble(matcher.group(2));
+         double c = Double.parseDouble(matcher.group(3));
+         double d = Double.parseDouble(matcher.group(4));
+
+         return new Quaternion(a, b, c, d);
+      } catch (NumberFormatException e) {
+         throw new IllegalArgumentException(
+                 "Cannot parse quaternion: invalid numeric value in '" + s + "'",
+                 e
+         );
+      }
    }
 
    /** Clone of the quaternion.
@@ -112,15 +117,17 @@ public class Quaternion {
     */
    @Override
    public Object clone() throws CloneNotSupportedException {
-      return new Quaternion (a, b, c, d);
+      return new Quaternion(rpart, ipart, jpart, kpart);
    }
 
    /** Test whether the quaternion is zero.
     * @return true, if the real part and all the imaginary parts are (close to) zero
     */
    public boolean isZero() {
-      return Math.abs (a) < EPSILON && Math.abs (b) < EPSILON
-              && Math.abs (c) < EPSILON && Math.abs (d) < EPSILON;
+      return Math.abs(rpart) < DELTA
+              && Math.abs(ipart) < DELTA
+              && Math.abs(jpart) < DELTA
+              && Math.abs(kpart) < DELTA;
    }
 
    /** Conjugate of the quaternion. Expressed by the formula
@@ -128,7 +135,7 @@ public class Quaternion {
     * @return conjugate of <code>this</code>
     */
    public Quaternion conjugate() {
-      return new Quaternion (a, -b, -c, -d);
+      return new Quaternion(rpart, -ipart, -jpart, -kpart);
    }
 
    /** Opposite of the quaternion. Expressed by the formula
@@ -136,7 +143,7 @@ public class Quaternion {
     * @return quaternion <code>-this</code>
     */
    public Quaternion opposite() {
-      return new Quaternion (-a, -b, -c, -d);
+      return new Quaternion(-rpart, -ipart, -jpart, -kpart);
    }
 
    /** Sum of quaternions. Expressed by the formula
@@ -145,7 +152,18 @@ public class Quaternion {
     * @return quaternion <code>this+q</code>
     */
    public Quaternion plus (Quaternion q) {
-      return new Quaternion (a + q.a, b + q.b, c + q.c, d + q.d);
+      if (q == null) {
+         throw new IllegalArgumentException(
+                 "Cannot add quaternion: the second operand is null"
+         );
+      }
+
+      return new Quaternion(
+              rpart + q.rpart,
+              ipart + q.ipart,
+              jpart + q.jpart,
+              kpart + q.kpart
+      );
    }
 
    /** Product of quaternions. Expressed by the formula
@@ -155,11 +173,33 @@ public class Quaternion {
     * @return quaternion <code>this*q</code>
     */
    public Quaternion times (Quaternion q) {
-      return new Quaternion (
-              a * q.a - b * q.b - c * q.c - d * q.d,
-              a * q.b + b * q.a + c * q.d - d * q.c,
-              a * q.c - b * q.d + c * q.a + d * q.b,
-              a * q.d + b * q.c - c * q.b + d * q.a);
+      if (q == null) {
+         throw new IllegalArgumentException(
+                 "Cannot multiply quaternions: the second operand is null"
+         );
+      }
+
+      double a = rpart * q.rpart
+              - ipart * q.ipart
+              - jpart * q.jpart
+              - kpart * q.kpart;
+
+      double b = rpart * q.ipart
+              + ipart * q.rpart
+              + jpart * q.kpart
+              - kpart * q.jpart;
+
+      double c = rpart * q.jpart
+              - ipart * q.kpart
+              + jpart * q.rpart
+              + kpart * q.ipart;
+
+      double d = rpart * q.kpart
+              + ipart * q.jpart
+              - jpart * q.ipart
+              + kpart * q.rpart;
+
+      return new Quaternion(a, b, c, d);
    }
 
    /** Multiplication by a coefficient.
@@ -167,7 +207,12 @@ public class Quaternion {
     * @return quaternion <code>this*r</code>
     */
    public Quaternion times (double r) {
-      return new Quaternion (a * r, b * r, c * r, d * r);
+      return new Quaternion(
+              rpart * r,
+              ipart * r,
+              jpart * r,
+              kpart * r
+      );
    }
 
    /** Inverse of the quaternion. Expressed by the formula
@@ -176,10 +221,44 @@ public class Quaternion {
     * @return quaternion <code>1/this</code>
     */
    public Quaternion inverse() {
-      if (isZero())
-         throw new RuntimeException ("Division by zero: cannot invert " + this);
-      double n2 = a * a + b * b + c * c + d * d;
-      return new Quaternion (a / n2, -b / n2, -c / n2, -d / n2);
+      double denominator =
+              rpart * rpart
+                      + ipart * ipart
+                      + jpart * jpart
+                      + kpart * kpart;
+
+      if (denominator < DELTA) {
+         throw new ArithmeticException(
+                 "Cannot calculate inverse: quaternion is zero"
+         );
+      }
+
+      return new Quaternion(
+              rpart / denominator,
+              -ipart / denominator,
+              -jpart / denominator,
+              -kpart / denominator
+      );
+   }
+
+   public Quaternion pow(int n) {
+      if (n == 0) {
+         return new Quaternion(1, 0, 0, 0);
+      }
+
+      if (n == 1) {
+         return new Quaternion(rpart, ipart, jpart, kpart);
+      }
+
+      if (n == -1) {
+         return inverse();
+      }
+
+      if (n > 1) {
+         return times(pow(n - 1));
+      }
+
+      return pow(-n).inverse();
    }
 
    /** Difference of quaternions. Expressed as addition to the opposite.
@@ -187,7 +266,18 @@ public class Quaternion {
     * @return quaternion <code>this-q</code>
     */
    public Quaternion minus (Quaternion q) {
-      return plus (q.opposite());
+      if (q == null) {
+         throw new IllegalArgumentException(
+                 "Cannot subtract quaternion: the second operand is null"
+         );
+      }
+
+      return new Quaternion(
+              rpart - q.rpart,
+              ipart - q.ipart,
+              jpart - q.jpart,
+              kpart - q.kpart
+      );
    }
 
    /** Right quotient of quaternions. Expressed as multiplication to the inverse.
@@ -195,9 +285,19 @@ public class Quaternion {
     * @return quaternion <code>this*inverse(q)</code>
     */
    public Quaternion divideByRight (Quaternion q) {
-      if (q.isZero())
-         throw new RuntimeException ("Division by zero: " + this + " / " + q);
-      return times (q.inverse());
+      if (q == null) {
+         throw new IllegalArgumentException(
+                 "Cannot divide by right quaternion: divisor is null"
+         );
+      }
+
+      if (q.isZero()) {
+         throw new ArithmeticException(
+                 "Cannot divide by right quaternion: divisor is zero"
+         );
+      }
+
+      return times(q.inverse());
    }
 
    /** Left quotient of quaternions.
@@ -205,9 +305,19 @@ public class Quaternion {
     * @return quaternion <code>inverse(q)*this</code>
     */
    public Quaternion divideByLeft (Quaternion q) {
-      if (q.isZero())
-         throw new RuntimeException ("Division by zero: " + q + " \\ " + this);
-      return q.inverse().times (this);
+      if (q == null) {
+         throw new IllegalArgumentException(
+                 "Cannot divide by left quaternion: divisor is null"
+         );
+      }
+
+      if (q.isZero()) {
+         throw new ArithmeticException(
+                 "Cannot divide by left quaternion: divisor is zero"
+         );
+      }
+
+      return q.inverse().times(this);
    }
 
    /** Equality test of quaternions. Difference of equal numbers
@@ -217,7 +327,20 @@ public class Quaternion {
     */
    @Override
    public boolean equals (Object qo) {
-      return qo instanceof Quaternion && minus ((Quaternion) qo).isZero();
+      if (this == qo) {
+         return true;
+      }
+
+      if (!(qo instanceof Quaternion)) {
+         return false;
+      }
+
+      Quaternion q = (Quaternion) qo;
+
+      return Math.abs(rpart - q.rpart) < DELTA
+              && Math.abs(ipart - q.ipart) < DELTA
+              && Math.abs(jpart - q.jpart) < DELTA
+              && Math.abs(kpart - q.kpart) < DELTA;
    }
 
    /** Dot product of quaternions. (p*conjugate(q) + q*conjugate(p))/2
@@ -225,7 +348,15 @@ public class Quaternion {
     * @return dot product of this and q
     */
    public Quaternion dotMult (Quaternion q) {
-      return times (q.conjugate()).plus (q.times (conjugate())).times (0.5);
+      if (q == null) {
+         throw new IllegalArgumentException(
+                 "Cannot calculate dot product: the second operand is null"
+         );
+      }
+
+      return this.times(q.conjugate())
+              .plus(q.times(this.conjugate()))
+              .times(0.5);
    }
 
    /** Integer hashCode has to be the same for equal objects.
@@ -233,8 +364,18 @@ public class Quaternion {
     */
    @Override
    public int hashCode() {
-      return Objects.hash (Math.round (a / EPSILON), Math.round (b / EPSILON),
-              Math.round (c / EPSILON), Math.round (d / EPSILON));
+      long r = Math.round(rpart / DELTA);
+      long i = Math.round(ipart / DELTA);
+      long j = Math.round(jpart / DELTA);
+      long k = Math.round(kpart / DELTA);
+
+      int result = 17;
+      result = 31 * result + (int)(r ^ (r >>> 32));
+      result = 31 * result + (int)(i ^ (i >>> 32));
+      result = 31 * result + (int)(j ^ (j >>> 32));
+      result = 31 * result + (int)(k ^ (k >>> 32));
+
+      return result;
    }
 
    /** Norm of the quaternion. Expressed by the formula
@@ -242,36 +383,30 @@ public class Quaternion {
     * @return norm of <code>this</code> (norm is a real number)
     */
    public double norm() {
-      return Math.sqrt (a * a + b * b + c * c + d * d);
+      return Math.sqrt(
+              rpart * rpart
+                      + ipart * ipart
+                      + jpart * jpart
+                      + kpart * kpart
+      );
    }
 
    /** Main method for testing purposes.
     * @param args command line parameters
     */
    public static void main (String[] args) {
-      Quaternion p = new Quaternion (1., 2., 3., 4.);
-      Quaternion q = new Quaternion (-2., 1., 0.5, -3.);
-      System.out.println (p + " | " + q);
-      System.out.println ("p+q = " + p.plus (q) + ", p-q = " + p.minus (q));
-      System.out.println ("p*q = " + p.times (q) + ", q*p = " + q.times (p));
-      System.out.println ("p*inverse(p) = " + p.times (p.inverse()));
-      System.out.println ("p/q right = " + p.divideByRight (q) + ", left = " + p.divideByLeft (q));
-      System.out.println ("dot = " + p.dotMult (q) + ", norm(p) = " + p.norm());
-      System.out.println ("round trip: " + valueOf (q.toString()).equals (q));
-      System.out.println (valueOf ("-1-2i-3j-4k") + " " + valueOf ("-2.0e-3-4.0e-1i-5.0e-2j-6.0e-3k"));
-      for (String bad : new String[] {"abc", "1+-2i+3j+4k", "1+2i+3j", "", "1 2i 3j 4k", "NaN+1i+2j+3k"}) {
-         try {
-            valueOf (bad);
-            System.out.println ("ERROR: accepted \"" + bad + "\"");
-         } catch (IllegalArgumentException e) {
-            System.out.println (e.getMessage());
-         }
-      }
-      try {
-         p.divideByRight (new Quaternion (0., 0., 0., 0.));
-      } catch (RuntimeException e) {
-         System.out.println (e.getMessage());
-      }
+      Quaternion q1 = new Quaternion(1, 2, 3, 4);
+      Quaternion q2 = new Quaternion(5, 6, 7, 8);
+
+      System.out.println("q1 = " + q1);
+      System.out.println("q2 = " + q2);
+      System.out.println("q1 + q2 = " + q1.plus(q2));
+      System.out.println("q1 - q2 = " + q1.minus(q2));
+      System.out.println("q1 * q2 = " + q1.times(q2));
+      System.out.println("conjugate(q1) = " + q1.conjugate());
+      System.out.println("opposite(q1) = " + q1.opposite());
+      System.out.println("norm(q1) = " + q1.norm());
+      System.out.println("inverse(q1) = " + q1.inverse());
    }
 
 }
